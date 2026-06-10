@@ -45,6 +45,7 @@ jobs:
     - name: Stage site
       run: |
         mkdir -p _site
+        cp src/CNAME _site/
         cp src/index.html _site/
         cp src/summary_timeseries.csv _site/
         cp src/summary_sizes.csv _site/

@@ -23,10 +23,14 @@
       color: #222;
     }
     h1 {
-      font-size: 17px;
-      font-weight: normal;
+      font-size: 22px;
+      font-weight: 600;
       margin-bottom: 12px;
-      color: #444;
+      color: #1a1a1a;
+    }
+    main {
+      max-width: 1300px;
+      margin: 0 auto;
     }
     #plot { width: 100%; }
   </style>
@@ -37,8 +41,10 @@
     <img src="https://raw.githubusercontent.com/dandi/dandi-archive/master/web/src/assets/logo.svg" alt="DANDI Archive" style="height: 40px; display: block;">
   </a>
 </header>
+<main>
 <h1 id="page-title">DANDI Archive Summary</h1>
 <div id="plot"></div>
+</main>
 
 <script>
 const csvFiles = [
@@ -78,8 +84,10 @@ function parseCSV(text) {
   });
 }
 
-const OPEN_COLOR = '#ffffff';
-const EMB_COLOR  = 'rgba(136,136,136,0.3)';
+const OPEN_COLOR = '#0072B2';
+const EMB_COLOR  = '#E69F00';
+const OPEN_FILL  = 'rgba(0,114,178,0.40)';
+const EMB_FILL   = 'rgba(230,159,0,0.40)';
 
 // ---- helpers ----
 function buildHistogram(rows) {
@@ -159,29 +167,31 @@ periods.forEach(p => {
   cumTotalSize.push(openS + embS);
 });
 
-// ---- Plot A: cumulative datasets (stacked) ----
-const traceA_emb     = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumEmbCount,   line: { ...lineStyle, color: '#888888' }, fill: 'tozeroy', fillcolor: 'rgba(136,136,136,0.5)', xaxis:'x',  yaxis:'y',  showlegend:false, legend:'legend',  hovertemplate:'%{y}<extra></extra>' };
-const traceA_open    = { type:'scatter', mode:'lines', name:'Open access',      x: allDates, y: cumTotalCount, line: { ...lineStyle, color: '#000000' }, fill: 'none',                                  xaxis:'x',  yaxis:'y',  showlegend:true,  legend:'legend',  customdata: cumOpenCount,  hovertemplate:'%{customdata}<extra></extra>' };
-const traceA_emb_leg = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumEmbCount,   line: { ...lineStyle, color: '#888888' }, fill: 'none',                                  xaxis:'x',  yaxis:'y',  showlegend:true,  legend:'legend',  hovertemplate:'%{y}<extra></extra>' };
+// ---- Plot A: cumulative datasets (open on bottom, embargoed stacked on top) ----
+const traceA_open = { type:'scatter', mode:'lines', name:'Open access',      x: allDates, y: cumOpenCount,  line: { ...lineStyle, color: OPEN_COLOR }, fill: 'tozeroy', fillcolor: OPEN_FILL, xaxis:'x',  yaxis:'y',  showlegend:true, legend:'legend',  hovertemplate:'%{x|%b %Y}: %{y}<extra></extra>' };
+const traceA_emb  = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumTotalCount, line: { ...lineStyle, color: EMB_COLOR },  fill: 'tonexty', fillcolor: EMB_FILL,  xaxis:'x',  yaxis:'y',  showlegend:true, legend:'legend',  customdata: cumEmbCount, hovertemplate:'%{x|%b %Y}: %{customdata}<extra></extra>' };
 
-const traceB_emb     = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumEmbSize,   line: { ...lineStyle, color: '#888888' }, fill: 'tozeroy', fillcolor: 'rgba(136,136,136,0.5)', xaxis:'x2', yaxis:'y2', showlegend:false, legend:'legend2', hovertemplate:'%{y:.1f}<extra></extra>' };
-const traceB_open    = { type:'scatter', mode:'lines', name:'Open access',      x: allDates, y: cumTotalSize, line: { ...lineStyle, color: '#000000' }, fill: 'none',                                  xaxis:'x2', yaxis:'y2', showlegend:true,  legend:'legend2', customdata: cumOpenSize,  hovertemplate:'%{customdata:.1f}<extra></extra>' };
-const traceB_emb_leg = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumEmbSize,    line: { ...lineStyle, color: '#888888' }, fill: 'none',                                  xaxis:'x2', yaxis:'y2', showlegend:true,  legend:'legend2', hovertemplate:'%{y:.1f}<extra></extra>' };
+const traceB_open = { type:'scatter', mode:'lines', name:'Open access',      x: allDates, y: cumOpenSize,  line: { ...lineStyle, color: OPEN_COLOR }, fill: 'tozeroy', fillcolor: OPEN_FILL, xaxis:'x2', yaxis:'y2', showlegend:true, legend:'legend2', hovertemplate:'%{x|%b %Y}: %{y:.1f}<extra></extra>' };
+const traceB_emb  = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumTotalSize, line: { ...lineStyle, color: EMB_COLOR },  fill: 'tonexty', fillcolor: EMB_FILL,  xaxis:'x2', yaxis:'y2', showlegend:true, legend:'legend2', customdata: cumEmbSize, hovertemplate:'%{x|%b %Y}: %{customdata:.1f}<extra></extra>' };
 
 // ---- Plot C: size distribution ----
 const sizeHist = buildHistogram(parseCSV(sizesText));
 const HIST_BAR_FRACTION = 0.80;
 const sizeBarWidths = sizeHist.widths.map(w => w * HIST_BAR_FRACTION);
 
-const traceC_emb  = { type:'bar', name:'Embargoed access', x: sizeHist.centers, y: sizeHist.emb,  width: sizeBarWidths, marker:{ color: EMB_COLOR,  line:{color:'#000000', width:1} }, xaxis:'x3', yaxis:'y3', showlegend:true, legend:'legend3', hovertemplate:'%{y}<extra></extra>' };
-const traceC_open = { type:'bar', name:'Open access',      x: sizeHist.centers, y: sizeHist.open, width: sizeBarWidths, marker:{ color: OPEN_COLOR, line:{color:'#000000', width:1} }, xaxis:'x3', yaxis:'y3', showlegend:true, legend:'legend3', hovertemplate:'%{y}<extra></extra>' };
+// open on bottom, embargoed stacked on top (manual stack via `base` so the
+// global barmode can be 'group' for plots E and F)
+const sizeBarOffsets = sizeBarWidths.map(w => -w / 2);
+const traceC_open = { type:'bar', name:'Open access',      x: sizeHist.centers, y: sizeHist.open,                     width: sizeBarWidths, offset: sizeBarOffsets, marker:{ color: OPEN_COLOR }, xaxis:'x3', yaxis:'y3', showlegend:true, legend:'legend3', hovertemplate:'%{y}<extra></extra>' };
+const traceC_emb  = { type:'bar', name:'Embargoed access', x: sizeHist.centers, y: sizeHist.emb,  base: sizeHist.open, width: sizeBarWidths, offset: sizeBarOffsets, marker:{ color: EMB_COLOR  }, xaxis:'x3', yaxis:'y3', showlegend:true, legend:'legend3', hovertemplate:'%{y}<extra></extra>' };
 
 // ---- Plot D: subjects distribution ----
 const subjHist = buildHistogram(parseCSV(subjectsText));
 const subjBarWidths = subjHist.widths.map(w => w * HIST_BAR_FRACTION);
 
-const traceD_emb  = { type:'bar', name:'Embargoed access', x: subjHist.centers, y: subjHist.emb,  width: subjBarWidths, marker:{ color: EMB_COLOR,  line:{color:'#000000', width:1} }, xaxis:'x4', yaxis:'y4', showlegend:true, legend:'legend4', hovertemplate:'%{y}<extra></extra>' };
-const traceD_open = { type:'bar', name:'Open access',      x: subjHist.centers, y: subjHist.open, width: subjBarWidths, marker:{ color: OPEN_COLOR, line:{color:'#000000', width:1} }, xaxis:'x4', yaxis:'y4', showlegend:true, legend:'legend4', hovertemplate:'%{y}<extra></extra>' };
+const subjBarOffsets = subjBarWidths.map(w => -w / 2);
+const traceD_open = { type:'bar', name:'Open access',      x: subjHist.centers, y: subjHist.open,                     width: subjBarWidths, offset: subjBarOffsets, marker:{ color: OPEN_COLOR }, xaxis:'x4', yaxis:'y4', showlegend:true, legend:'legend4', hovertemplate:'%{y}<extra></extra>' };
+const traceD_emb  = { type:'bar', name:'Embargoed access', x: subjHist.centers, y: subjHist.emb,  base: subjHist.open, width: subjBarWidths, offset: subjBarOffsets, marker:{ color: EMB_COLOR  }, xaxis:'x4', yaxis:'y4', showlegend:true, legend:'legend4', hovertemplate:'%{y}<extra></extra>' };
 
 // Shared y-axis range for C and D
 const cdDtick = 50;
@@ -209,28 +219,30 @@ if (spOther.length > 0) {
   spSorted.push('Other');
 }
 
+// horizontal grouped bars; categories reversed so the largest is at the top
+const spPlot = [...spSorted].reverse();
 const traceE_emb = {
-  type: 'bar', name: 'Embargoed access',
-  x: spSorted, y: spSorted.map(s => embSp[s]||0),
-  marker: { color: EMB_COLOR, line: { color: '#000000', width: 1 } },
+  type: 'bar', orientation: 'h', name: 'Embargoed access',
+  y: spPlot, x: spPlot.map(s => embSp[s]||0),
+  marker: { color: EMB_COLOR },
   xaxis: 'x5', yaxis: 'y5', showlegend: true, legend: 'legend5',
-  hovertemplate: '%{y}<extra></extra>',
+  hovertemplate: '%{x}<extra></extra>',
 };
 const traceE_open = {
-  type: 'bar', name: 'Open access',
-  x: spSorted, y: spSorted.map(s => openSp[s]||0),
-  marker: { color: OPEN_COLOR, line: { color: '#000000', width: 1 } },
+  type: 'bar', orientation: 'h', name: 'Open access',
+  y: spPlot, x: spPlot.map(s => openSp[s]||0),
+  marker: { color: OPEN_COLOR },
   xaxis: 'x5', yaxis: 'y5', showlegend: true, legend: 'legend5',
-  hovertemplate: '%{y}<extra></extra>',
+  hovertemplate: '%{x}<extra></extra>',
 };
 
 // ---- Plot F: modality bar chart ----
 const modalityNames = {
-  extracellularephys: 'Extracellular<br>electrophysiology',
-  intracellularephys: 'Intracellular<br>electrophysiology',
+  extracellularephys: 'Extracellular<br>ephys',
+  intracellularephys: 'Intracellular<br>ephys',
   opticalphysiology:  'Optical<br>physiology',
   behavior:           'Behavior',
-  eyetracking:        'Eye<br>tracking',
+  eyetracking:        'Eye tracking',
   optogenetics:       'Optogenetics',
 };
 const modKeys = Object.keys(modalityNames);
@@ -243,21 +255,22 @@ modKeys.forEach(m => {
 const modTotal = {};
 modKeys.forEach(m => { modTotal[m] = (openMod[m]||0) + (embMod[m]||0); });
 const modSorted = [...modKeys].sort((a, b) => modTotal[b] - modTotal[a]);
-const modLabels = modSorted.map(m => modalityNames[m]);
 
+const modPlot = [...modSorted].reverse();
+const modPlotLabels = modPlot.map(m => modalityNames[m]);
 const traceF_emb = {
-  type: 'bar', name: 'Embargoed access',
-  x: modLabels, y: modSorted.map(m => embMod[m]||0),
-  marker: { color: EMB_COLOR, line: { color: '#000000', width: 1 } },
+  type: 'bar', orientation: 'h', name: 'Embargoed access',
+  y: modPlotLabels, x: modPlot.map(m => embMod[m]||0),
+  marker: { color: EMB_COLOR },
   xaxis: 'x6', yaxis: 'y6', showlegend: true, legend: 'legend6',
-  hovertemplate: '%{y}<extra></extra>',
+  hovertemplate: '%{x}<extra></extra>',
 };
 const traceF_open = {
-  type: 'bar', name: 'Open access',
-  x: modLabels, y: modSorted.map(m => openMod[m]||0),
-  marker: { color: OPEN_COLOR, line: { color: '#000000', width: 1 } },
+  type: 'bar', orientation: 'h', name: 'Open access',
+  y: modPlotLabels, x: modPlot.map(m => openMod[m]||0),
+  marker: { color: OPEN_COLOR },
   xaxis: 'x6', yaxis: 'y6', showlegend: true, legend: 'legend6',
-  hovertemplate: '%{y}<extra></extra>',
+  hovertemplate: '%{x}<extra></extra>',
 };
 
 // Shared y-axis range for E and F
@@ -269,35 +282,35 @@ const efMax    = Math.ceil(efRawMax / efDtick) * efDtick;
 
 // ---- layout ----
 const layout = {
-  barmode: 'stack',
+  barmode: 'group',
   bargap: 0.3,
   paper_bgcolor: '#fff',
   plot_bgcolor: '#fff',
   font: { family: 'sans-serif', size: 12, color: '#000000' },
-  height: 1100,
-  margin: { t: 50, b: 160, l: 100, r: 20 },
+  height: 1200,
+  margin: { t: 50, b: 80, l: 100, r: 20 },
 
-  // per-subplot legends, top-right of each domain
-  legend:  { x: 0.01, y: 1.00, xanchor: 'left', yanchor: 'top', bordercolor: '#000000', borderwidth: 1, font: { size: 13 } },
-  legend2: { x: 0.55, y: 1.00, xanchor: 'left', yanchor: 'top', bordercolor: '#000000', borderwidth: 1, font: { size: 13 } },
-  legend3: { x: 0.46, y: 0.57, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', bordercolor: '#000000', borderwidth: 1, font: { size: 13 } },
-  legend4: { x: 1.00, y: 0.57, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', bordercolor: '#000000', borderwidth: 1, font: { size: 13 } },
-  legend5: { x: 0.46, y: 0.20, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', bordercolor: '#000000', borderwidth: 1, font: { size: 13 } },
-  legend6: { x: 1.00, y: 0.20, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', bordercolor: '#000000', borderwidth: 1, font: { size: 13 } },
+  // per-subplot legends (embargoed listed above open, matching the stacks)
+  legend:  { x: 0.01, y: 1.00, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend2: { x: 0.59, y: 1.00, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend3: { x: 0.44, y: 0.62, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend4: { x: 1.00, y: 0.62, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend5: { x: 0.44, y: 0.01, xanchor: 'right', yanchor: 'bottom', traceorder: 'reversed', font: { size: 13 } },
+  legend6: { x: 1.00, y: 0.01, xanchor: 'right', yanchor: 'bottom', traceorder: 'reversed', font: { size: 13 } },
 
   annotations: [
     { text: '<b>A</b>', xref:'paper', yref:'paper', x:-0.05, y:1.04, showarrow:false, font:{size:20} },
-    { text: '<b>B</b>', xref:'paper', yref:'paper', x:0.50,  y:1.04, showarrow:false, font:{size:20} },
-    { text: '<b>C</b>', xref:'paper', yref:'paper', x:-0.05, y:0.60, showarrow:false, font:{size:20} },
-    { text: '<b>D</b>', xref:'paper', yref:'paper', x:0.50,  y:0.60, showarrow:false, font:{size:20} },
-    { text: '<b>E</b>', xref:'paper', yref:'paper', x:-0.05, y:0.23, showarrow:false, font:{size:20} },
-    { text: '<b>F</b>', xref:'paper', yref:'paper', x:0.50,  y:0.23, showarrow:false, font:{size:20} },
+    { text: '<b>B</b>', xref:'paper', yref:'paper', x:0.53,  y:1.04, showarrow:false, font:{size:20} },
+    { text: '<b>C</b>', xref:'paper', yref:'paper', x:-0.05, y:0.66, showarrow:false, font:{size:20} },
+    { text: '<b>D</b>', xref:'paper', yref:'paper', x:0.53,  y:0.66, showarrow:false, font:{size:20} },
+    { text: '<b>E</b>', xref:'paper', yref:'paper', x:-0.05, y:0.30, showarrow:false, font:{size:20} },
+    { text: '<b>F</b>', xref:'paper', yref:'paper', x:0.53,  y:0.30, showarrow:false, font:{size:20} },
   ],
 
   // A - cumulative datasets
   xaxis: {
     ...axBase,
-    domain: [0.0, 0.46], anchor: 'y',
+    domain: [0.0, 0.44], anchor: 'y',
     type: 'date',
     tick0: '2020-01-01', dtick: 'M12', tickformat: '%Y',
     range: ['2020-01-01', lastDate],
@@ -305,7 +318,7 @@ const layout = {
   },
   yaxis: {
     ...yBase,
-    domain: [0.73, 1.0], anchor: 'x',
+    domain: [0.74, 1.0], anchor: 'x',
     rangemode: 'tozero',
     title: { text: 'Datasets (#)', font: { size: 16 } },
   },
@@ -313,7 +326,7 @@ const layout = {
   // B - cumulative size
   xaxis2: {
     ...axBase,
-    domain: [0.54, 1.0], anchor: 'y2',
+    domain: [0.58, 1.0], anchor: 'y2',
     type: 'date',
     tick0: '2020-01-01', dtick: 'M12', tickformat: '%Y',
     range: ['2020-01-01', lastDate],
@@ -321,7 +334,7 @@ const layout = {
   },
   yaxis2: {
     ...yBase,
-    domain: [0.73, 1.0], anchor: 'x2',
+    domain: [0.74, 1.0], anchor: 'x2',
     rangemode: 'tozero',
     title: { text: 'Size (TB)', font: { size: 16 } },
   },
@@ -329,7 +342,7 @@ const layout = {
   // C - size distribution
   xaxis3: {
     ...axBase,
-    domain: [0.0, 0.46], anchor: 'y3',
+    domain: [0.0, 0.44], anchor: 'y3',
     tickmode: 'array',
     tickvals: [3, 6, 9, 12, 15],
     ticktext: ['KB', 'MB', 'GB', 'TB', 'PB'],
@@ -338,7 +351,7 @@ const layout = {
   },
   yaxis3: {
     ...yBase,
-    domain: [0.36, 0.57], anchor: 'x3',
+    domain: [0.38, 0.62], anchor: 'x3',
     title: { text: 'Datasets (#)', font: { size: 16 } },
     range: [0, cdMax], dtick: cdDtick,
   },
@@ -346,7 +359,7 @@ const layout = {
   // D - subjects distribution
   xaxis4: {
     ...axBase,
-    domain: [0.54, 1.0], anchor: 'y4',
+    domain: [0.58, 1.0], anchor: 'y4',
     tickmode: 'array',
     tickvals: [0, 1, 2, 3],
     ticktext: ['1', '10', '100', '1 000'],
@@ -355,45 +368,41 @@ const layout = {
   },
   yaxis4: {
     ...yBase,
-    domain: [0.36, 0.57], anchor: 'x4',
+    domain: [0.38, 0.62], anchor: 'x4',
     title: { text: 'Datasets (#)', font: { size: 16 } },
     range: [0, cdMax], dtick: cdDtick,
   },
 
-  // E - species
+  // E - species (horizontal bars)
   xaxis5: {
-    ...axBase,
-    domain: [0.0, 0.46], anchor: 'y5',
-    tickangle: 0,
-    title: { text: 'Species', font: { size: 16 }, standoff: 35 },
+    ...yBase,
+    domain: [0.0, 0.44], anchor: 'y5',
+    title: { text: 'Datasets (#)', font: { size: 16 } },
+    range: [0, efMax], dtick: efDtick,
   },
   yaxis5: {
-    ...yBase,
-    domain: [0.0, 0.20], anchor: 'x5',
-    title: { text: 'Datasets (#)', font: { size: 16 } },
-    range: [0, efMax], dtick: efDtick,
+    ...axBase,
+    domain: [0.0, 0.26], anchor: 'x5',
   },
 
-  // F - modality
+  // F - modality (horizontal bars)
   xaxis6: {
-    ...axBase,
-    domain: [0.54, 1.0], anchor: 'y6',
-    tickangle: 0,
-    title: { text: 'Modality', font: { size: 16 }, standoff: 20 },
-  },
-  yaxis6: {
     ...yBase,
-    domain: [0.0, 0.20], anchor: 'x6',
+    domain: [0.58, 1.0], anchor: 'y6',
     title: { text: 'Datasets (#)', font: { size: 16 } },
     range: [0, efMax], dtick: efDtick,
+  },
+  yaxis6: {
+    ...axBase,
+    domain: [0.0, 0.26], anchor: 'x6',
   },
 };
 
 const traces = [
-  traceA_emb,  traceA_open,  traceA_emb_leg,
-  traceB_emb,  traceB_open,  traceB_emb_leg,
-  traceC_emb,  traceC_open,
-  traceD_emb,  traceD_open,
+  traceA_open, traceA_emb,
+  traceB_open, traceB_emb,
+  traceC_open, traceC_emb,
+  traceD_open, traceD_emb,
   traceE_emb,  traceE_open,
   traceF_emb,  traceF_open,
 ];
@@ -420,6 +429,30 @@ Plotly.newPlot('plot', traces, layout, {
       click: gd => Plotly.downloadImage(gd, { format: 'png', filename: 'dandi_archive_summary' }),
     },
   ],
+}).then(gd => {
+  // The embargoed traces in A-D are drawn stacked on top of the open traces,
+  // so when 'Open access' is toggled off via the legend they would float at
+  // their stacked height. Re-anchor them to the x-axis whenever that happens.
+  const stackSync = [
+    { open: traces.indexOf(traceA_open), emb: traces.indexOf(traceA_emb), attr: 'y',    shown: cumTotalCount, hidden: cumEmbCount },
+    { open: traces.indexOf(traceB_open), emb: traces.indexOf(traceB_emb), attr: 'y',    shown: cumTotalSize,  hidden: cumEmbSize },
+    { open: traces.indexOf(traceC_open), emb: traces.indexOf(traceC_emb), attr: 'base', shown: sizeHist.open, hidden: 0 },
+    { open: traces.indexOf(traceD_open), emb: traces.indexOf(traceD_emb), attr: 'base', shown: subjHist.open, hidden: 0 },
+  ];
+  let syncing = false;
+  gd.on('plotly_restyle', () => {
+    if (syncing) return;
+    const updates = [];
+    stackSync.forEach(p => {
+      const v = gd.data[p.open].visible;
+      const openVisible = v === undefined || v === true;
+      const want = openVisible ? p.shown : p.hidden;
+      if (gd.data[p.emb][p.attr] !== want) updates.push([{ [p.attr]: [want] }, [p.emb]]);
+    });
+    if (!updates.length) return;
+    syncing = true;
+    Promise.all(updates.map(([u, t]) => Plotly.restyle(gd, u, t))).then(() => { syncing = false; });
+  });
 });
 
 }); // end fetch .then

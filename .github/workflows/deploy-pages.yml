@@ -49,7 +49,7 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add src/summary_*.csv
+        git add data/summary_*.csv
         if git diff --cached --quiet; then
           echo "No changes to CSVs"
           exit 0
@@ -63,11 +63,11 @@ jobs:
         mkdir -p _site
         cp src/CNAME _site/
         cp src/index.html _site/
-        cp src/summary_timeseries.csv _site/
-        cp src/summary_sizes.csv _site/
-        cp src/summary_subjects.csv _site/
-        cp src/summary_species.csv _site/
-        cp src/summary_modalities.csv _site/
+        cp data/summary_timeseries.csv _site/
+        cp data/summary_sizes.csv _site/
+        cp data/summary_subjects.csv _site/
+        cp data/summary_species.csv _site/
+        cp data/summary_modalities.csv _site/
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3

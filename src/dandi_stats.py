@@ -43,6 +43,7 @@ neurodata_replacement = {
     "behavior": ["BehavioralEpochs", "BehavioralEvents", "BehavioralTimeSeries", "Position"],
     "eyetracking": ["EyeTracking", "PupilTracking"],
     "optogenetics": ["OptogeneticSeries"],
+    "fiberphotometry": ["FiberPhotometryResponseSeries", "FiberPhotometryTable"],
 }
 
 data = defaultdict(list)

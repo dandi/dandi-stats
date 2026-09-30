@@ -43,7 +43,7 @@ neurodata_replacement = {
     "behavior": ["BehavioralEpochs", "BehavioralEvents", "BehavioralTimeSeries", "Position"],
     "eyetracking": ["EyeTracking", "PupilTracking"],
     "optogenetics": ["OptogeneticSeries"],
-    "fiberphotometry": ["FiberPhotometryResponseSeries", "FiberPhotometryTable"],
+    "fiberphotometry": ["FiberPhotometryResponseSeries", "FiberPhotometryTable", "fiber photometry", "fiber photometry approach"],
 }
 
 data = defaultdict(list)
@@ -63,9 +63,13 @@ for dandiset in tqdm(dandisets):
 
         data["numberOfSubjects"].append(metadata["assetsSummary"].get("numberOfSubjects", np.nan))
 
-        variables_measured = metadata["assetsSummary"].get("variableMeasured") or []
+        # Detect modalities by matching assetsSummary values against neurodata_replacement
+        modality_labels = list(metadata["assetsSummary"].get("variableMeasured") or [])
+        for field in ("measurementTechnique", "approach"):
+            for item in metadata["assetsSummary"].get(field) or []:
+                modality_labels.append(item.get("name", ""))
         for modality, ndtypes in neurodata_replacement.items():
-            data[modality].append(any(x in ndtypes for x in variables_measured))
+            data[modality].append(any(x in ndtypes for x in modality_labels))
     except Exception as e:
         failed.append((dandiset.identifier, repr(e)))
 

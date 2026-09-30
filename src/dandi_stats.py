@@ -63,13 +63,18 @@ for dandiset in tqdm(dandisets):
 
         data["numberOfSubjects"].append(metadata["assetsSummary"].get("numberOfSubjects", np.nan))
 
-        # Detect modalities by matching assetsSummary values against neurodata_replacement
+        # Detect modalities by matching metadata values against neurodata_replacement
         modality_labels = list(metadata["assetsSummary"].get("variableMeasured") or [])
+        modality_labels += metadata.get("keywords") or []
         for field in ("measurementTechnique", "approach"):
             for item in metadata["assetsSummary"].get(field) or []:
                 modality_labels.append(item.get("name", ""))
+        for item in metadata.get("about") or []:
+            modality_labels.append(item.get("name", ""))
+        modality_labels = {x.lower() for x in modality_labels}
+
         for modality, ndtypes in neurodata_replacement.items():
-            data[modality].append(any(x in ndtypes for x in modality_labels))
+            data[modality].append(any(x.lower() in modality_labels for x in ndtypes))
     except Exception as e:
         failed.append((dandiset.identifier, repr(e)))
 

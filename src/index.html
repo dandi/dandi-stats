@@ -48,11 +48,11 @@
 
 <script>
 const csvFiles = [
-  './summary_timeseries.csv',
-  './summary_sizes.csv',
-  './summary_subjects.csv',
-  './summary_species.csv',
-  './summary_modalities.csv',
+  './timeseries.csv',
+  './sizes.csv',
+  './subjects.csv',
+  './species.csv',
+  './modalities.csv',
 ];
 
 Promise.all(csvFiles.map(f => fetch(f)))

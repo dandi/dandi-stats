@@ -98,7 +98,7 @@ timeseries = pd.DataFrame({
     "size_added": grouped["size"].sum(),
 }).reset_index()
 os.makedirs("data", exist_ok=True)
-timeseries.to_csv("data/summary_timeseries.csv", index=False)
+timeseries.to_csv("data/timeseries.csv", index=False)
 
 # Create summaries for plots C-F
 def histogram_by_access(values, edges):
@@ -117,18 +117,18 @@ def histogram_by_access(values, edges):
 
 size_edges = np.linspace(2, 16, 29)
 log_size = np.log10(df["size"].where(df["size"] > 0))
-histogram_by_access(log_size, size_edges).to_csv("data/summary_sizes.csv", index=False)
+histogram_by_access(log_size, size_edges).to_csv("data/sizes.csv", index=False)
 
 subject_edges = np.linspace(0, 4, 31)
 log_subjects = np.log10(df["numberOfSubjects"].where(df["numberOfSubjects"] > 0))
-histogram_by_access(log_subjects, subject_edges).to_csv("data/summary_subjects.csv", index=False)
+histogram_by_access(log_subjects, subject_edges).to_csv("data/subjects.csv", index=False)
 
 (
     df.dropna(subset=["species"])
       .groupby(["species", "access"])
       .size()
       .reset_index(name="count")
-      .to_csv("data/summary_species.csv", index=False)
+      .to_csv("data/species.csv", index=False)
 )
 
 modality_cols = list(neurodata_replacement)
@@ -139,6 +139,6 @@ modality_cols = list(neurodata_replacement)
       .groupby(["modality", "access"])
       .size()
       .reset_index(name="count")
-      .to_csv("data/summary_modalities.csv", index=False)
+      .to_csv("data/modalities.csv", index=False)
 )
 

@@ -55,11 +55,7 @@ const csvFiles = [
   './modalities.csv',
 ];
 
-// Logos for plot A
-const sourceLogos = [
-  { src: 'img/ibl-logo.svg', alt: 'International Brain Laboratory' },
-  { src: 'img/bican-logo.svg', alt: 'BRAIN Initiative Cell Atlas Network' },
-];
+// Image for plot A (inlined as a data URL so it is kept in SVG/PNG downloads)
 const toDataURL = url => fetch(url)
   .then(r => r.blob())
   .then(blob => new Promise(resolve => {
@@ -67,7 +63,7 @@ const toDataURL = url => fetch(url)
     reader.onload = () => resolve(reader.result);
     reader.readAsDataURL(blob);
   }));
-const logosReady = Promise.all(sourceLogos.map(l => toDataURL(l.src)));
+const panelAReady = toDataURL('img/panel-a.svg');
 
 Promise.all(csvFiles.map(f => fetch(f)))
   .then(responses => {
@@ -82,9 +78,9 @@ Promise.all(csvFiles.map(f => fetch(f)))
         document.title = title;
       }
     }
-    return Promise.all([...responses.map(r => r.text()), logosReady]);
+    return Promise.all([...responses.map(r => r.text()), panelAReady]);
   })
-  .then(([tsText, sizesText, subjectsText, speciesText, modalitiesText, logoSources]) => {
+  .then(([tsText, sizesText, subjectsText, speciesText, modalitiesText, panelASource]) => {
 
 // ---- parse CSV ----
 function parseCSV(text) {
@@ -296,16 +292,14 @@ const efDtick  = 100;
 const efMax    = Math.ceil(efRawMax / efDtick) * efDtick;
 
 // ---- Plot A: data sources ----
-const LOGO_WIDTH = 0.21;
-const LOGO_GAP   = 0.03;
-const logoImages = logoSources.map((src, i) => ({
-  source: src,
+const panelAImage = {
+  source: panelASource,
   xref: 'paper', yref: 'paper',
-  x: i * (LOGO_WIDTH + LOGO_GAP), y: 0.975,
-  sizex: LOGO_WIDTH, sizey: 0.0675,
+  x: -0.1, y: 1.0,
+  sizex: 1, sizey: 0.2,
   xanchor: 'left', yanchor: 'top',
   sizing: 'contain', layer: 'above',
-}));
+};
 
 // ---- layout ----
 const layout = {
@@ -314,28 +308,27 @@ const layout = {
   paper_bgcolor: '#fff',
   plot_bgcolor: '#fff',
   font: { family: 'sans-serif', size: 12, color: '#000000' },
-  height: 1400,
+  height: 1600,
   margin: { t: 50, b: 80, l: 100, r: 20 },
 
-  images: logoImages,
+  images: [panelAImage],
 
   // per-subplot legends (embargoed listed above open, matching the stacks)
-  legend:  { x: 0.01, y: 0.86, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
-  legend2: { x: 0.59, y: 0.86, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
-  legend3: { x: 0.44, y: 0.54, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
-  legend4: { x: 1.00, y: 0.54, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend:  { x: 0.01, y: 0.742, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend2: { x: 0.59, y: 0.742, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend3: { x: 0.44, y: 0.466, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend4: { x: 1.00, y: 0.466, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
   legend5: { x: 0.44, y: 0.01, xanchor: 'right', yanchor: 'bottom', traceorder: 'reversed', font: { size: 13 } },
   legend6: { x: 1.00, y: 0.01, xanchor: 'right', yanchor: 'bottom', traceorder: 'reversed', font: { size: 13 } },
 
   annotations: [
-    { text: '<b>A</b>', xref:'paper', yref:'paper', x:-0.05, y:1.035, showarrow:false, font:{size:20} },
-    { text: 'DANDI Archive hosts data from the NIH BRAIN Initiative and the wider neuroscience community.', xref:'paper', yref:'paper', x:0, y:1.0, xanchor:'left', yanchor:'top', showarrow:false, font:{size:15} },
-    { text: '<b>B</b>', xref:'paper', yref:'paper', x:-0.05, y:0.895, showarrow:false, font:{size:20} },
-    { text: '<b>C</b>', xref:'paper', yref:'paper', x:0.53,  y:0.895, showarrow:false, font:{size:20} },
-    { text: '<b>D</b>', xref:'paper', yref:'paper', x:-0.05, y:0.575, showarrow:false, font:{size:20} },
-    { text: '<b>E</b>', xref:'paper', yref:'paper', x:0.53,  y:0.575, showarrow:false, font:{size:20} },
-    { text: '<b>F</b>', xref:'paper', yref:'paper', x:-0.05, y:0.255, showarrow:false, font:{size:20} },
-    { text: '<b>G</b>', xref:'paper', yref:'paper', x:0.53,  y:0.255, showarrow:false, font:{size:20} },
+    { text: '<b>A</b>', xref:'paper', yref:'paper', x:-0.05, y:1.03, showarrow:false, font:{size:20} },
+    { text: '<b>B</b>', xref:'paper', yref:'paper', x:-0.05, y:0.772, showarrow:false, font:{size:20} },
+    { text: '<b>C</b>', xref:'paper', yref:'paper', x:0.53,  y:0.772, showarrow:false, font:{size:20} },
+    { text: '<b>D</b>', xref:'paper', yref:'paper', x:-0.05, y:0.496, showarrow:false, font:{size:20} },
+    { text: '<b>E</b>', xref:'paper', yref:'paper', x:0.53,  y:0.496, showarrow:false, font:{size:20} },
+    { text: '<b>F</b>', xref:'paper', yref:'paper', x:-0.05, y:0.22, showarrow:false, font:{size:20} },
+    { text: '<b>G</b>', xref:'paper', yref:'paper', x:0.53,  y:0.22, showarrow:false, font:{size:20} },
   ],
 
   // B - cumulative datasets
@@ -349,7 +342,7 @@ const layout = {
   },
   yaxis: {
     ...yBase,
-    domain: [0.64, 0.86], anchor: 'x',
+    domain: [0.552, 0.742], anchor: 'x',
     rangemode: 'tozero',
     title: { text: 'Datasets (#)', font: { size: 16 } },
   },
@@ -365,7 +358,7 @@ const layout = {
   },
   yaxis2: {
     ...yBase,
-    domain: [0.64, 0.86], anchor: 'x2',
+    domain: [0.552, 0.742], anchor: 'x2',
     rangemode: 'tozero',
     title: { text: 'Size (TB)', font: { size: 16 } },
   },
@@ -382,7 +375,7 @@ const layout = {
   },
   yaxis3: {
     ...yBase,
-    domain: [0.32, 0.54], anchor: 'x3',
+    domain: [0.276, 0.466], anchor: 'x3',
     title: { text: 'Datasets (#)', font: { size: 16 } },
     range: [0, cdMax], dtick: cdDtick,
   },
@@ -399,7 +392,7 @@ const layout = {
   },
   yaxis4: {
     ...yBase,
-    domain: [0.32, 0.54], anchor: 'x4',
+    domain: [0.276, 0.466], anchor: 'x4',
     title: { text: 'Datasets (#)', font: { size: 16 } },
     range: [0, cdMax], dtick: cdDtick,
   },
@@ -413,7 +406,7 @@ const layout = {
   },
   yaxis5: {
     ...axBase,
-    domain: [0.0, 0.22], anchor: 'x5',
+    domain: [0.0, 0.19], anchor: 'x5',
   },
 
   // G - modality (horizontal bars)
@@ -425,7 +418,7 @@ const layout = {
   },
   yaxis6: {
     ...axBase,
-    domain: [0.0, 0.22], anchor: 'x6',
+    domain: [0.0, 0.19], anchor: 'x6',
   },
 };
 

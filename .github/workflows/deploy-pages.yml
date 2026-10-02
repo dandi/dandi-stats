@@ -63,6 +63,7 @@ jobs:
         mkdir -p _site
         cp src/CNAME _site/
         cp src/index.html _site/
+        cp -r img _site/
         cp data/timeseries.csv _site/
         cp data/sizes.csv _site/
         cp data/subjects.csv _site/

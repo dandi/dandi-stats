@@ -5,7 +5,7 @@ on:
     - cron: "0 2 * * *"
   push:
     branches:
-      - dev
+      - main
   workflow_dispatch:
 
 permissions:
@@ -27,7 +27,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: dev
+        ref: main
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -55,8 +55,8 @@ jobs:
           exit 0
         fi
         git commit -m "Update summary CSVs ($(date -u +%Y-%m-%d))"
-        git pull --rebase origin dev
-        git push origin HEAD:dev
+        git pull --rebase origin main
+        git push origin HEAD:main
 
     - name: Stage site
       run: |

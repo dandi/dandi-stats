@@ -1,4 +1,5 @@
 import os
+import re
 import pandas as pd
 import numpy as np
 from dandi.dandiapi import DandiAPIClient
@@ -46,6 +47,21 @@ neurodata_replacement = {
     "fiberphotometry": ["FiberPhotometryResponseSeries", "FiberPhotometryTable", "fiber photometry", "fiber photometry approach"],
 }
 
+microscopy_suffixes = [
+    "2PE", "BF", "CARS", "CONF", "DIC", "DF", "FLUO", "MPE", "NLO",
+    "OCT", "PC", "PLI", "SEM", "SPIM", "SR", "TEM", "XPCT", "uCT",
+]
+microscopy_pattern = re.compile(
+    rf"_({'|'.join(microscopy_suffixes)})\.(ome\.tif|ome\.btf|ome\.zarr|tif|png)$"
+)
+
+def has_microscopy(dandiset, metadata):
+    standards = [s.get("name", "") for s in metadata["assetsSummary"].get("dataStandard") or []]
+    if not any("BIDS" in s or "NGFF" in s for s in standards):
+        return False
+
+    return any(microscopy_pattern.search(asset.path) for asset in dandiset.get_assets())
+
 data = defaultdict(list)
 failed = []
 for dandiset in tqdm(dandisets):
@@ -75,6 +91,7 @@ for dandiset in tqdm(dandisets):
 
         for modality, ndtypes in neurodata_replacement.items():
             data[modality].append(any(x.lower() in modality_labels for x in ndtypes))
+        data["microscopy"].append(has_microscopy(dandiset, metadata))
     except Exception as e:
         failed.append((dandiset.identifier, repr(e)))
 
@@ -131,7 +148,7 @@ histogram_by_access(log_subjects, subject_edges).to_csv("data/subjects.csv", ind
       .to_csv("data/species.csv", index=False)
 )
 
-modality_cols = list(neurodata_replacement)
+modality_cols = list(neurodata_replacement) + ["microscopy"]
 (
     df[modality_cols + ["access"]]
       .melt(id_vars="access", var_name="modality", value_name="present")

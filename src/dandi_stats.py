@@ -55,24 +55,27 @@ microscopy_pattern = re.compile(
     rf"_({'|'.join(microscopy_suffixes)})\.(ome\.tif|ome\.btf|ome\.zarr|tif|png)$"
 )
 
-def has_microscopy(dandiset, metadata):
+def has_microscopy(metadata, assets):
     standards = [s.get("name", "") for s in metadata["assetsSummary"].get("dataStandard") or []]
     if not any("BIDS" in s or "NGFF" in s for s in standards):
         return False
 
-    return any(microscopy_pattern.search(asset.path) for asset in dandiset.get_assets())
+    return any(microscopy_pattern.search(asset.path) for asset in assets)
 
 data = defaultdict(list)
+asset_sizes = defaultdict(int)
 failed = []
 for dandiset in tqdm(dandisets):
     try:
         if not dandiset.draft_version.size:
             continue
         metadata = dandiset.get_raw_metadata()
+        assets = list(dandiset.get_assets())
+        access = dandiset.embargo_status.name
 
         data["created"].append(dandiset.created.date())
         data["size"].append(dandiset.draft_version.size)
-        data["access"].append(dandiset.embargo_status.name)
+        data["access"].append(access)
 
         species = metadata["assetsSummary"].get("species")
         data["species"].append(species[0]["name"] if species else np.nan)
@@ -91,7 +94,10 @@ for dandiset in tqdm(dandisets):
 
         for modality, ndtypes in neurodata_replacement.items():
             data[modality].append(any(x.lower() in modality_labels for x in ndtypes))
-        data["microscopy"].append(has_microscopy(dandiset, metadata))
+        data["microscopy"].append(has_microscopy(metadata, assets))
+
+        for asset in assets:
+            asset_sizes[(asset.modified.strftime("%Y-%m"), access)] += asset.size
     except Exception as e:
         failed.append((dandiset.identifier, repr(e)))
 
@@ -107,13 +113,18 @@ df = df.sort_values(
 ).reset_index(drop=True)
 df["species"] = df["species"].replace(species_replacement)
 
-# Number of Dandisets created and size added per month for plots A and B
+# Number of Dandisets created (plot B) and bytes of assets created/updated (plot C) per month
 df["period"] = pd.to_datetime(df["created"]).dt.to_period("M").astype(str)
-grouped = df.groupby(["period", "access"])
-timeseries = pd.DataFrame({
-    "number_added": grouped.size(),
-    "size_added": grouped["size"].sum(),
-}).reset_index()
+number_added = df.groupby(["period", "access"]).size()
+size_added = pd.Series(asset_sizes, dtype="int64")
+size_added.index.names = ["period", "access"]
+timeseries = (
+    pd.DataFrame({"number_added": number_added, "size_added": size_added})
+      .fillna(0)
+      .astype("int64")
+      .sort_index()
+      .reset_index()
+)
 os.makedirs("data", exist_ok=True)
 timeseries.to_csv("data/timeseries.csv", index=False)
 

@@ -167,8 +167,8 @@ let openN = 0, embN = 0, openS = 0, embS = 0;
 periods.forEach(p => {
   openN += byPeriod[p].OPEN.n;
   embN  += byPeriod[p].EMBARGOED.n;
-  openS += byPeriod[p].OPEN.size / 1e12;
-  embS  += byPeriod[p].EMBARGOED.size / 1e12;
+  openS += byPeriod[p].OPEN.size / 1e15;
+  embS  += byPeriod[p].EMBARGOED.size / 1e15;
   cumOpenCount.push(openN);
   cumEmbCount.push(embN);
   cumTotalCount.push(openN + embN);
@@ -181,8 +181,8 @@ periods.forEach(p => {
 const traceB_open = { type:'scatter', mode:'lines', name:'Open access',      x: allDates, y: cumOpenCount,  line: { ...lineStyle, color: OPEN_COLOR }, fill: 'tozeroy', fillcolor: OPEN_FILL, xaxis:'x',  yaxis:'y',  showlegend:true, legend:'legend',  hovertemplate:'%{x|%b %Y}: %{y}<extra></extra>' };
 const traceB_emb  = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumTotalCount, line: { ...lineStyle, color: EMB_COLOR },  fill: 'tonexty', fillcolor: EMB_FILL,  xaxis:'x',  yaxis:'y',  showlegend:true, legend:'legend',  customdata: cumEmbCount, hovertemplate:'%{x|%b %Y}: %{customdata}<extra></extra>' };
 
-const traceC_open = { type:'scatter', mode:'lines', name:'Open access',      x: allDates, y: cumOpenSize,  line: { ...lineStyle, color: OPEN_COLOR }, fill: 'tozeroy', fillcolor: OPEN_FILL, xaxis:'x2', yaxis:'y2', showlegend:true, legend:'legend2', hovertemplate:'%{x|%b %Y}: %{y:.1f}<extra></extra>' };
-const traceC_emb  = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumTotalSize, line: { ...lineStyle, color: EMB_COLOR },  fill: 'tonexty', fillcolor: EMB_FILL,  xaxis:'x2', yaxis:'y2', showlegend:true, legend:'legend2', customdata: cumEmbSize, hovertemplate:'%{x|%b %Y}: %{customdata:.1f}<extra></extra>' };
+const traceC_open = { type:'scatter', mode:'lines', name:'Open access',      x: allDates, y: cumOpenSize,  line: { ...lineStyle, color: OPEN_COLOR }, fill: 'tozeroy', fillcolor: OPEN_FILL, xaxis:'x2', yaxis:'y2', showlegend:true, legend:'legend2', hovertemplate:'%{x|%b %Y}: %{y:.2f}<extra></extra>' };
+const traceC_emb  = { type:'scatter', mode:'lines', name:'Embargoed access', x: allDates, y: cumTotalSize, line: { ...lineStyle, color: EMB_COLOR },  fill: 'tonexty', fillcolor: EMB_FILL,  xaxis:'x2', yaxis:'y2', showlegend:true, legend:'legend2', customdata: cumEmbSize, hovertemplate:'%{x|%b %Y}: %{customdata:.2f}<extra></extra>' };
 
 // ---- Plot D: size distribution ----
 const sizeHist = buildHistogram(parseCSV(sizesText));
@@ -361,7 +361,7 @@ const layout = {
     ...yBase,
     domain: [0.552, 0.742], anchor: 'x2',
     rangemode: 'tozero',
-    title: { text: 'Size (TB)', font: { size: 16 } },
+    title: { text: 'Size (PB)', font: { size: 16 } },
   },
 
   // D - size distribution

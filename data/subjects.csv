@@ -1,7 +1,7 @@
 bin_left,bin_right,access,count
 0.0,0.13,OPEN,83
 0.13,0.27,OPEN,0
-0.27,0.4,OPEN,46
+0.27,0.4,OPEN,45
 0.4,0.53,OPEN,27
 0.53,0.67,OPEN,32
 0.67,0.8,OPEN,41
@@ -9,7 +9,7 @@ bin_left,bin_right,access,count
 0.93,1.07,OPEN,52
 1.07,1.2,OPEN,57
 1.2,1.33,OPEN,57
-1.33,1.47,OPEN,48
+1.33,1.47,OPEN,49
 1.47,1.6,OPEN,44
 1.6,1.73,OPEN,23
 1.73,1.87,OPEN,18

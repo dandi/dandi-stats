@@ -12,8 +12,8 @@ bin_left,bin_right,access,count
 7.0,7.5,OPEN,16
 7.5,8.0,OPEN,31
 8.0,8.5,OPEN,60
-8.5,9.0,OPEN,40
-9.0,9.5,OPEN,61
+8.5,9.0,OPEN,39
+9.0,9.5,OPEN,62
 9.5,10.0,OPEN,81
 10.0,10.5,OPEN,82
 10.5,11.0,OPEN,82

@@ -12,15 +12,15 @@ Fruit fly,OPEN,15
 Hamster,OPEN,12
 Human,EMBARGOED,2
 Human,OPEN,58
-Macaque,EMBARGOED,13
-Macaque,OPEN,57
+Macaque,EMBARGOED,11
+Macaque,OPEN,59
 Marmoset,OPEN,2
 Meriones unguiculatus,OPEN,1
 Microtus ochrogaster - Prairie voles,OPEN,1
 Mouse,EMBARGOED,46
-Mouse,OPEN,271
+Mouse,OPEN,270
 Pig,OPEN,1
-Polistes fuscatus,EMBARGOED,1
+Polistes fuscatus,OPEN,1
 Rabbit,OPEN,3
 Rat,EMBARGOED,17
 Rat,OPEN,85
@@ -28,4 +28,4 @@ Saimiri boliviensis - Bolivian squirrel monkey,OPEN,2
 Taeniopygia guttata - Zebra finch,OPEN,2
 Unidentified,OPEN,4
 Zebra fish,EMBARGOED,17
-Zebra fish,OPEN,27
+Zebra fish,OPEN,30

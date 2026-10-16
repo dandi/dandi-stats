@@ -1,6 +1,6 @@
 modality,access,count
 behavior,EMBARGOED,26
-behavior,OPEN,144
+behavior,OPEN,145
 extracellularephys,EMBARGOED,49
 extracellularephys,OPEN,244
 eyetracking,EMBARGOED,3
@@ -12,6 +12,6 @@ intracellularephys,OPEN,67
 microscopy,EMBARGOED,2
 microscopy,OPEN,23
 opticalphysiology,EMBARGOED,23
-opticalphysiology,OPEN,125
+opticalphysiology,OPEN,126
 optogenetics,EMBARGOED,4
 optogenetics,OPEN,18

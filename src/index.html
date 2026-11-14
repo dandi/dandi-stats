@@ -145,6 +145,19 @@ function buildAccessCounts(rows, keyCol) {
   return { open, emb };
 }
 
+// ---- shared axis styling ----
+const axBase = {
+  showline: true, linecolor: '#000000', linewidth: 0.8,
+  ticks: 'outside', ticklen: 4, tickwidth: 0.8, tickcolor: '#000000',
+  showgrid: false, zeroline: false, mirror: false,
+  tickfont: { size: 13 },
+};
+const yBase = {
+  ...axBase,
+  showgrid: true,
+  gridcolor: '#E6E6E6', gridwidth: 0.5, griddash: 'solid',
+};
+
 // ---- Plot B & C: build cumulative series from the monthly time series ----
 const tsRows = parseCSV(tsText);
 const periods = [...new Set(tsRows.map(r => r.period))].sort();
@@ -292,221 +305,207 @@ const efRawMax = Math.max(spMax, modMax);
 const efDtick  = 100;
 const efMax    = Math.ceil(efRawMax / efDtick) * efDtick;
 
+// ---- Plot A: data sources ----
+const panelAImage = {
+  source: panelASource,
+  xref: 'paper', yref: 'paper',
+  x: -0.04, y: 1.0,
+  sizex: 1.04, sizey: 0.2,
+  xanchor: 'left', yanchor: 'top',
+  sizing: 'contain', layer: 'above',
+};
+
 // ---- layout ----
-// Below this container width the panels are stacked in a single column.
+const layout = {
+  barmode: 'group',
+  bargap: 0.3,
+  paper_bgcolor: '#fff',
+  plot_bgcolor: '#fff',
+  font: { family: 'sans-serif', size: 12, color: '#000000' },
+  height: 1600,
+  margin: { t: 50, b: 80, l: 100, r: 20 },
+
+  images: [panelAImage],
+
+  // per-subplot legends (embargoed listed above open, matching the stacks)
+  legend:  { x: 0.01, y: 0.742, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend2: { x: 0.59, y: 0.742, xanchor: 'left', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend3: { x: 0.44, y: 0.466, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend4: { x: 1.00, y: 0.466, xanchor: 'right', yanchor: 'top', traceorder: 'reversed', font: { size: 13 } },
+  legend5: { x: 0.44, y: 0.01, xanchor: 'right', yanchor: 'bottom', traceorder: 'reversed', font: { size: 13 } },
+  legend6: { x: 1.00, y: 0.01, xanchor: 'right', yanchor: 'bottom', traceorder: 'reversed', font: { size: 13 } },
+
+  annotations: [
+    { text: '<b>A</b>', xref:'paper', yref:'paper', x:-0.05, y:1.03, showarrow:false, font:{size:20} },
+    { text: '<b>B</b>', xref:'paper', yref:'paper', x:-0.05, y:0.772, showarrow:false, font:{size:20} },
+    { text: '<b>C</b>', xref:'paper', yref:'paper', x:0.53,  y:0.772, showarrow:false, font:{size:20} },
+    { text: '<b>D</b>', xref:'paper', yref:'paper', x:-0.05, y:0.496, showarrow:false, font:{size:20} },
+    { text: '<b>E</b>', xref:'paper', yref:'paper', x:0.53,  y:0.496, showarrow:false, font:{size:20} },
+    { text: '<b>F</b>', xref:'paper', yref:'paper', x:-0.05, y:0.22, showarrow:false, font:{size:20} },
+    { text: '<b>G</b>', xref:'paper', yref:'paper', x:0.53,  y:0.22, showarrow:false, font:{size:20} },
+  ],
+
+  // B - cumulative datasets
+  xaxis: {
+    ...axBase,
+    domain: [0.0, 0.44], anchor: 'y',
+    type: 'date',
+    tick0: '2020-01-01', dtick: 'M12', tickformat: '%Y',
+    range: ['2020-01-01', lastDate],
+    title: { text: 'Date', font: { size: 16 } },
+  },
+  yaxis: {
+    ...yBase,
+    domain: [0.552, 0.742], anchor: 'x',
+    rangemode: 'tozero',
+    title: { text: 'Datasets (#)', font: { size: 16 } },
+  },
+
+  // C - cumulative size
+  xaxis2: {
+    ...axBase,
+    domain: [0.58, 1.0], anchor: 'y2',
+    type: 'date',
+    tick0: '2020-01-01', dtick: 'M12', tickformat: '%Y',
+    range: ['2020-01-01', lastDate],
+    title: { text: 'Date', font: { size: 16 } },
+  },
+  yaxis2: {
+    ...yBase,
+    domain: [0.552, 0.742], anchor: 'x2',
+    rangemode: 'tozero',
+    title: { text: 'Size (PB)', font: { size: 16 } },
+  },
+
+  // D - size distribution
+  xaxis3: {
+    ...axBase,
+    domain: [0.0, 0.44], anchor: 'y3',
+    tickmode: 'array',
+    tickvals: [3, 6, 9, 12, 15],
+    ticktext: ['KB', 'MB', 'GB', 'TB', 'PB'],
+    range: [2, 16],
+    title: { text: 'Dataset size', font: { size: 16 } },
+  },
+  yaxis3: {
+    ...yBase,
+    domain: [0.276, 0.466], anchor: 'x3',
+    title: { text: 'Datasets (#)', font: { size: 16 } },
+    range: [0, cdMax], dtick: cdDtick,
+  },
+
+  // E - subjects distribution
+  xaxis4: {
+    ...axBase,
+    domain: [0.58, 1.0], anchor: 'y4',
+    tickmode: 'array',
+    tickvals: [0, 1, 2, 3],
+    ticktext: ['1', '10', '100', '1000'],
+    range: [0, 4],
+    title: { text: 'Number of subjects', font: { size: 16 } },
+  },
+  yaxis4: {
+    ...yBase,
+    domain: [0.276, 0.466], anchor: 'x4',
+    title: { text: 'Datasets (#)', font: { size: 16 } },
+    range: [0, cdMax], dtick: cdDtick,
+  },
+
+  // F - species (horizontal bars)
+  xaxis5: {
+    ...yBase,
+    domain: [0.0, 0.44], anchor: 'y5',
+    title: { text: 'Datasets (#)', font: { size: 16 } },
+    range: [0, efMax], dtick: efDtick,
+  },
+  yaxis5: {
+    ...axBase,
+    domain: [0.0, 0.19], anchor: 'x5',
+  },
+
+  // G - modality (horizontal bars)
+  xaxis6: {
+    ...yBase,
+    domain: [0.58, 1.0], anchor: 'y6',
+    title: { text: 'Datasets (#)', font: { size: 16 } },
+    range: [0, efMax], dtick: efDtick,
+  },
+  yaxis6: {
+    ...axBase,
+    domain: [0.0, 0.19], anchor: 'x6',
+  },
+};
+
+// ---- mobile layout ----
+// Below this container width the panels are stacked in a single column by
+// overriding the positions and font sizes of the desktop layout above.
 const MOBILE_BREAKPOINT = 700;
 const PANEL_A_ASPECT = 988 / 236;  // width / height of img/panel-a.svg
 const plotDiv = document.getElementById('plot');
 const isMobile = () => plotDiv.clientWidth < MOBILE_BREAKPOINT;
 
-function buildLayout(mobile) {
-  const fs = mobile
-    ? { tick: 11, title: 13, legend: 11, label: 18 }
-    : { tick: 13, title: 16, legend: 13, label: 20 };
+// Panels top to bottom: plot height (px) and the axes/legend each one uses.
+const mobilePanels = [
+  { h: null },  // A: image, height follows the width
+  { h: 220, axes: ['xaxis',  'yaxis'],  legend: 'legend'  },  // B
+  { h: 220, axes: ['xaxis2', 'yaxis2'], legend: 'legend2' },  // C
+  { h: 220, axes: ['xaxis3', 'yaxis3'], legend: 'legend3' },  // D
+  { h: 220, axes: ['xaxis4', 'yaxis4'], legend: 'legend4' },  // E
+  { h: 280, axes: ['xaxis5', 'yaxis5'], legend: 'legend5' },  // F
+  { h: 260, axes: ['xaxis6', 'yaxis6'], legend: 'legend6' },  // G
+];
 
-  const axBase = {
-    showline: true, linecolor: '#000000', linewidth: 0.8,
-    ticks: 'outside', ticklen: 4, tickwidth: 0.8, tickcolor: '#000000',
-    showgrid: false, zeroline: false, mirror: false,
-    tickfont: { size: fs.tick },
-  };
-  const yBase = {
-    ...axBase,
-    showgrid: true,
-    gridcolor: '#E6E6E6', gridwidth: 0.5, griddash: 'solid',
-  };
-  const title = text => ({ text, font: { size: fs.title } });
-  const legendBase = { traceorder: 'reversed', font: { size: fs.legend } };
-  const label = (text, x, y, extra = {}) =>
-    ({ text: `<b>${text}</b>`, xref: 'paper', yref: 'paper', x, y, showarrow: false, font: { size: fs.label }, ...extra });
+function mobileOverrides() {
+  const margin = { t: 40, b: 10, l: 90, r: 12 };
+  const W = plotDiv.clientWidth;
+  const plotW = Math.max(W - margin.l - margin.r, 1);
+  const LABEL_H = 34;  // row holding the panel letter above each panel
+  const AXIS_H  = 62;  // tick labels + axis title below each panel
+  const heights = mobilePanels.map(p => p.h ?? W / PANEL_A_ASPECT);
+  const gaps    = mobilePanels.map(p => p.axes ? AXIS_H : 16);
+  const total   = heights.reduce((s, h, i) => s + LABEL_H + h + gaps[i], 0);
+  const toY = px => 1 - px / total;
+  const leftEdge = -margin.l / plotW;  // paper x of the container's left edge
 
-  // Per-panel geometry. Desktop: 2-column grid in paper coordinates.
-  // Mobile: one column; heights are laid out in pixels and converted to paper
-  // coordinates below.
-  let height, margin, geom, imageA, legendPos, labels;
-
-  if (!mobile) {
-    height = 1600;
-    margin = { t: 50, b: 80, l: 100, r: 20 };
-    const L = [0.0, 0.44], R = [0.58, 1.0];
-    geom = {
-      B: { x: L, y: [0.552, 0.742] }, C: { x: R, y: [0.552, 0.742] },
-      D: { x: L, y: [0.276, 0.466] }, E: { x: R, y: [0.276, 0.466] },
-      F: { x: L, y: [0.0, 0.19] },    G: { x: R, y: [0.0, 0.19] },
+  const o = { height: Math.round(total + margin.t + margin.b), margin, annotations: [] };
+  let px = 0;
+  mobilePanels.forEach((p, i) => {
+    o.annotations.push({ ...layout.annotations[i], x: leftEdge, y: toY(px), xanchor: 'left', yanchor: 'top', font: { size: 18 } });
+    px += LABEL_H;
+    const y = [toY(px + heights[i]), toY(px)];
+    px += heights[i] + gaps[i];
+    if (!p.axes) {
+      o.images = [{ ...layout.images[0], x: leftEdge, y: y[1], sizex: W / plotW, sizey: y[1] - y[0] }];
+      return;
+    }
+    const [xa, ya] = p.axes;
+    o[xa] = { domain: [0, 1], tickfont: { size: 11 } };
+    o[ya] = { domain: y, tickfont: { size: 11 } };
+    p.axes.forEach(a => { if (layout[a].title) o[a].title = { font: { size: 13 } }; });
+    // keep each legend in the same corner of its panel as on desktop
+    const lg = layout[p.legend];
+    o[p.legend] = {
+      x: lg.xanchor === 'left' ? 0.02 : 1.0,
+      y: lg.yanchor === 'top' ? y[1] : y[0] + 0.002,
+      font: { size: 11 },
     };
-    imageA = { x: -0.04, y: 1.0, sizex: 1.04, sizey: 0.2 };
-    legendPos = {
-      legend:  { x: 0.01, y: 0.742, xanchor: 'left',  yanchor: 'top' },
-      legend2: { x: 0.59, y: 0.742, xanchor: 'left',  yanchor: 'top' },
-      legend3: { x: 0.44, y: 0.466, xanchor: 'right', yanchor: 'top' },
-      legend4: { x: 1.00, y: 0.466, xanchor: 'right', yanchor: 'top' },
-      legend5: { x: 0.44, y: 0.01,  xanchor: 'right', yanchor: 'bottom' },
-      legend6: { x: 1.00, y: 0.01,  xanchor: 'right', yanchor: 'bottom' },
-    };
-    labels = [
-      label('A', -0.05, 1.03),
-      label('B', -0.05, 0.772), label('C', 0.53, 0.772),
-      label('D', -0.05, 0.496), label('E', 0.53, 0.496),
-      label('F', -0.05, 0.22),  label('G', 0.53, 0.22),
-    ];
-  } else {
-    margin = { t: 40, b: 10, l: 90, r: 12 };
-    const W = plotDiv.clientWidth;
-    const plotW = Math.max(W - margin.l - margin.r, 1);
-    const LABEL_H = 34;   // row holding the panel letter above each panel
-    const AXIS_H  = 62;   // tick labels + axis title below each panel
-    const imgH = W / PANEL_A_ASPECT;
-    const panels = [
-      { key: 'A', h: imgH, axis: 16 },
-      { key: 'B', h: 220 }, { key: 'C', h: 220 },
-      { key: 'D', h: 220 }, { key: 'E', h: 220 },
-      { key: 'F', h: 280 }, { key: 'G', h: 260 },
-    ];
-    const total = panels.reduce((s, p) => s + LABEL_H + p.h + (p.axis ?? AXIS_H), 0);
-    height = Math.round(total + margin.t + margin.b);
-    const toY = px => 1 - px / total;
-
-    const full = [0, 1];
-    const leftEdge = -margin.l / plotW;  // paper x of the container's left edge
-    geom = {};
-    labels = [];
-    let px = 0;
-    panels.forEach(p => {
-      labels.push(label(p.key, leftEdge, toY(px), { xanchor: 'left', yanchor: 'top' }));
-      px += LABEL_H;
-      geom[p.key] = { x: full, y: [toY(px + p.h), toY(px)] };
-      px += p.h + (p.axis ?? AXIS_H);
-    });
-    imageA = { x: leftEdge, y: geom.A.y[1], sizex: W / plotW, sizey: geom.A.y[1] - geom.A.y[0] };
-    const top = k => ({ y: geom[k].y[1] });
-    const bottom = k => ({ y: geom[k].y[0] + 0.002 });
-    legendPos = {
-      legend:  { x: 0.02, ...top('B'),    xanchor: 'left',  yanchor: 'top' },
-      legend2: { x: 0.02, ...top('C'),    xanchor: 'left',  yanchor: 'top' },
-      legend3: { x: 1.00, ...top('D'),    xanchor: 'right', yanchor: 'top' },
-      legend4: { x: 1.00, ...top('E'),    xanchor: 'right', yanchor: 'top' },
-      legend5: { x: 1.00, ...bottom('F'), xanchor: 'right', yanchor: 'bottom' },
-      legend6: { x: 1.00, ...bottom('G'), xanchor: 'right', yanchor: 'bottom' },
-    };
-  }
-
-  const legends = {};
-  Object.entries(legendPos).forEach(([k, v]) => { legends[k] = { ...v, ...legendBase }; });
-
-  return {
-    barmode: 'group',
-    bargap: 0.3,
-    paper_bgcolor: '#fff',
-    plot_bgcolor: '#fff',
-    font: { family: 'sans-serif', size: 12, color: '#000000' },
-    height,
-    margin,
-
-    // ---- Plot A: data sources ----
-    images: [{
-      source: panelASource,
-      xref: 'paper', yref: 'paper',
-      ...imageA,
-      xanchor: 'left', yanchor: 'top',
-      sizing: 'contain', layer: 'above',
-    }],
-
-    // per-subplot legends (embargoed listed above open, matching the stacks)
-    ...legends,
-
-    annotations: labels,
-
-    // B - cumulative datasets
-    xaxis: {
-      ...axBase,
-      domain: geom.B.x, anchor: 'y',
-      type: 'date',
-      tick0: '2020-01-01', dtick: 'M12', tickformat: '%Y',
-      range: ['2020-01-01', lastDate],
-      title: title('Date'),
-    },
-    yaxis: {
-      ...yBase,
-      domain: geom.B.y, anchor: 'x',
-      rangemode: 'tozero',
-      title: title('Datasets (#)'),
-    },
-
-    // C - cumulative size
-    xaxis2: {
-      ...axBase,
-      domain: geom.C.x, anchor: 'y2',
-      type: 'date',
-      tick0: '2020-01-01', dtick: 'M12', tickformat: '%Y',
-      range: ['2020-01-01', lastDate],
-      title: title('Date'),
-    },
-    yaxis2: {
-      ...yBase,
-      domain: geom.C.y, anchor: 'x2',
-      rangemode: 'tozero',
-      title: title('Size (PB)'),
-    },
-
-    // D - size distribution
-    xaxis3: {
-      ...axBase,
-      domain: geom.D.x, anchor: 'y3',
-      tickmode: 'array',
-      tickvals: [3, 6, 9, 12, 15],
-      ticktext: ['KB', 'MB', 'GB', 'TB', 'PB'],
-      range: [2, 16],
-      title: title('Dataset size'),
-    },
-    yaxis3: {
-      ...yBase,
-      domain: geom.D.y, anchor: 'x3',
-      title: title('Datasets (#)'),
-      range: [0, cdMax], dtick: cdDtick,
-    },
-
-    // E - subjects distribution
-    xaxis4: {
-      ...axBase,
-      domain: geom.E.x, anchor: 'y4',
-      tickmode: 'array',
-      tickvals: [0, 1, 2, 3],
-      ticktext: ['1', '10', '100', '1000'],
-      range: [0, 4],
-      title: title('Number of subjects'),
-    },
-    yaxis4: {
-      ...yBase,
-      domain: geom.E.y, anchor: 'x4',
-      title: title('Datasets (#)'),
-      range: [0, cdMax], dtick: cdDtick,
-    },
-
-    // F - species (horizontal bars)
-    xaxis5: {
-      ...yBase,
-      domain: geom.F.x, anchor: 'y5',
-      title: title('Datasets (#)'),
-      range: [0, efMax], dtick: efDtick,
-    },
-    yaxis5: {
-      ...axBase,
-      domain: geom.F.y, anchor: 'x5',
-    },
-
-    // G - modality (horizontal bars)
-    xaxis6: {
-      ...yBase,
-      domain: geom.G.x, anchor: 'y6',
-      title: title('Datasets (#)'),
-      range: [0, efMax], dtick: efDtick,
-    },
-    yaxis6: {
-      ...axBase,
-      domain: geom.G.y, anchor: 'x6',
-    },
-  };
+  });
+  return o;
 }
+
+// Recursively merge plain objects; arrays and other values are replaced.
+const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+function merge(base, over) {
+  const out = { ...base };
+  Object.entries(over).forEach(([k, v]) => { out[k] = isObj(v) && isObj(base[k]) ? merge(base[k], v) : v; });
+  return out;
+}
+
+// Plotly mutates the layout it is given, so always hand it a fresh copy.
+const layoutFor = mobile => {
+  const base = JSON.parse(JSON.stringify(layout));
+  return mobile ? merge(base, mobileOverrides()) : base;
+};
 
 const traces = [
   traceB_open, traceB_emb,
@@ -528,13 +527,12 @@ const DESKTOP_EXPORT_WIDTH = 1300;
 function downloadFigure(gd, format) {
   const opts = { format, filename: 'dandi_archive_summary' };
   if (!isMobile()) return Plotly.downloadImage(gd, opts);
-  const layout = buildLayout(false);
-  const figure = { data: JSON.parse(JSON.stringify(gd.data)), layout };
+  const figure = { data: JSON.parse(JSON.stringify(gd.data)), layout: layoutFor(false) };
   return Plotly.downloadImage(figure, { ...opts, width: DESKTOP_EXPORT_WIDTH, height: layout.height });
 }
 
 let mobileLayout = isMobile();
-Plotly.newPlot('plot', traces, buildLayout(mobileLayout), {
+Plotly.newPlot('plot', traces, layoutFor(mobileLayout), {
   responsive: true,
   displayModeBar: true,
   modeBarButtonsToRemove: ['toImage'],
@@ -561,7 +559,7 @@ Plotly.newPlot('plot', traces, buildLayout(mobileLayout), {
       const mobile = isMobile();
       if (mobile || mobile !== mobileLayout) {
         mobileLayout = mobile;
-        Plotly.react(gd, gd.data, buildLayout(mobile));
+        Plotly.react(gd, gd.data, layoutFor(mobile));
       }
     }, 150);
   });

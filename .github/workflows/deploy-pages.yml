@@ -63,12 +63,16 @@ jobs:
         mkdir -p _site
         cp src/CNAME _site/
         cp src/index.html _site/
+        cp src/robots.txt _site/
+        cp src/sitemap.xml _site/
         cp -r img _site/
         cp data/timeseries.csv _site/
         cp data/sizes.csv _site/
         cp data/subjects.csv _site/
         cp data/species.csv _site/
         cp data/modalities.csv _site/
+        BUILD_DATE=$(date -u +%Y-%m-%d)
+        sed -i "s/__BUILD_DATE__/${BUILD_DATE}/g" _site/index.html _site/sitemap.xml
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3

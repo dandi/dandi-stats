@@ -8,6 +8,8 @@ Summary plots for the [DANDI Archive](https://dandiarchive.org), published at [s
 | --- | --- |
 | [`src/dandi_stats.py`](src/dandi_stats.py) | Fetches metadata for all non-empty Dandisets and aggregates it into summary CSVs in `data/` |
 | [`src/index.html`](src/index.html) | Static page that loads the CSVs and renders the plots |
+| [`src/robots.txt`](src/robots.txt), [`src/sitemap.xml`](src/sitemap.xml) | Crawler hints for search engines; `__BUILD_DATE__` placeholders (here and in the page's structured data) are filled in at deploy time |
+| [`img/og-image.png`](img/og-image.png) | 1200×630 preview image used when the page is shared or shown in search results |
 | [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) | Runs the Python script daily, commits CSVs, deploys the site to GitHub Pages |
 | [`data/`](data/) | Generated summary CSVs, each split by access status (`OPEN` / `EMBARGOED`) |
 | [`data/timeseries.csv`](data/timeseries.csv) | Number of Dandisets and bytes added per month |

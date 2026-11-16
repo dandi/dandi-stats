@@ -3,8 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DANDI Archive Summary</title>
+  <title>DANDI Archive Summary – Neurophysiology Data Statistics</title>
+  <meta name="description" content="Live statistics for the DANDI Archive, the BRAIN Initiative archive for neurophysiology data: growth in Dandisets and petabytes, dataset sizes, subject counts, species and data modalities.">
+  <meta name="keywords" content="DANDI, DANDI Archive, Dandiset, neurophysiology, neuroscience data, NWB, BIDS, open data, BRAIN Initiative, electrophysiology, optical physiology, microscopy, statistics">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://stats.dandiarchive.org/">
   <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/dandi/dandi-archive/master/web/public/favicon.ico">
+
+  <!-- Open Graph / social previews -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DANDI Archive">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="https://stats.dandiarchive.org/">
+  <meta property="og:title" content="DANDI Archive Summary – Neurophysiology Data Statistics">
+  <meta property="og:description" content="Growth, dataset sizes, subject counts, species and data modalities across all Dandisets in the DANDI Archive, updated daily.">
+  <meta property="og:image" content="https://stats.dandiarchive.org/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Cumulative number and total size of Dandisets in the DANDI Archive over time, split by open and embargoed access">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DANDI Archive Summary – Neurophysiology Data Statistics">
+  <meta name="twitter:description" content="Growth, dataset sizes, subject counts, species and data modalities across all Dandisets in the DANDI Archive, updated daily.">
+  <meta name="twitter:image" content="https://stats.dandiarchive.org/img/og-image.png">
+  <meta name="twitter:image:alt" content="Cumulative number and total size of Dandisets in the DANDI Archive over time, split by open and embargoed access">
+
+  <!-- Structured data (schema.org); __BUILD_DATE__ is filled in by the deploy workflow -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://dandiarchive.org/#organization",
+        "name": "DANDI Archive",
+        "alternateName": "Distributed Archives for Neurophysiology Data Integration",
+        "url": "https://dandiarchive.org/",
+        "logo": "https://raw.githubusercontent.com/dandi/dandi-archive/master/web/src/assets/logo.svg",
+        "sameAs": ["https://github.com/dandi"]
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://stats.dandiarchive.org/#webpage",
+        "url": "https://stats.dandiarchive.org/",
+        "name": "DANDI Archive Summary – Neurophysiology Data Statistics",
+        "description": "Live statistics for the DANDI Archive, the BRAIN Initiative archive for neurophysiology data: growth in Dandisets and petabytes, dataset sizes, subject counts, species and data modalities.",
+        "inLanguage": "en",
+        "dateModified": "__BUILD_DATE__",
+        "publisher": { "@id": "https://dandiarchive.org/#organization" },
+        "about": { "@id": "https://stats.dandiarchive.org/#dataset" },
+        "primaryImageOfPage": "https://stats.dandiarchive.org/img/og-image.png"
+      },
+      {
+        "@type": "Dataset",
+        "@id": "https://stats.dandiarchive.org/#dataset",
+        "name": "DANDI Archive summary statistics",
+        "description": "Daily-updated summary statistics for all non-empty Dandisets in the DANDI Archive, each split by access status (open or embargoed): the number of Dandisets and bytes added per month, a histogram of Dandiset sizes, a histogram of the number of subjects per Dandiset, Dandiset counts by species, and Dandiset counts by data modality (extracellular and intracellular electrophysiology, optical physiology, behavior, eye tracking, optogenetics, fiber photometry and microscopy).",
+        "url": "https://stats.dandiarchive.org/",
+        "sameAs": "https://github.com/dandi/dandi-stats",
+        "keywords": ["neuroscience", "neurophysiology", "DANDI Archive", "Dandiset", "NWB", "BIDS", "open data", "data sharing", "BRAIN Initiative"],
+        "isAccessibleForFree": true,
+        "dateModified": "__BUILD_DATE__",
+        "temporalCoverage": "2020-03/..",
+        "creator": { "@id": "https://dandiarchive.org/#organization" },
+        "publisher": { "@id": "https://dandiarchive.org/#organization" },
+        "isBasedOn": "https://dandiarchive.org/",
+        "variableMeasured": ["Number of Dandisets", "Data size (bytes)", "Number of subjects", "Species", "Data modality", "Access status"],
+        "distribution": [
+          { "@type": "DataDownload", "name": "Dandisets and bytes added per month", "encodingFormat": "text/csv", "contentUrl": "https://stats.dandiarchive.org/timeseries.csv" },
+          { "@type": "DataDownload", "name": "Histogram of Dandiset sizes", "encodingFormat": "text/csv", "contentUrl": "https://stats.dandiarchive.org/sizes.csv" },
+          { "@type": "DataDownload", "name": "Histogram of subjects per Dandiset", "encodingFormat": "text/csv", "contentUrl": "https://stats.dandiarchive.org/subjects.csv" },
+          { "@type": "DataDownload", "name": "Dandiset counts by species", "encodingFormat": "text/csv", "contentUrl": "https://stats.dandiarchive.org/species.csv" },
+          { "@type": "DataDownload", "name": "Dandiset counts by data modality", "encodingFormat": "text/csv", "contentUrl": "https://stats.dandiarchive.org/modalities.csv" }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://cdn.plot.ly">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-QLDZD3SJ3Y"></script>
@@ -33,6 +109,28 @@
       margin: 0 auto;
     }
     #plot { width: 100%; }
+    .intro {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #444;
+      margin: 0 0 8px;
+      max-width: 900px;
+    }
+    figure { margin: 0; }
+    figcaption, footer p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #444;
+      max-width: 900px;
+    }
+    figcaption ol { padding-left: 0; list-style: none; margin: 8px 0 0; }
+    footer {
+      max-width: 1300px;
+      margin: 24px auto 0;
+      border-top: 1px solid #ddd;
+      padding-top: 4px;
+    }
+    footer a, figcaption a, .intro a { color: #0072B2; }
   </style>
 </head>
 <body>
@@ -43,8 +141,37 @@
 </header>
 <main>
 <h1 id="page-title">DANDI Archive Summary</h1>
-<div id="plot"></div>
+<p class="intro">
+  Summary statistics for all Dandisets in the <a href="https://dandiarchive.org/">DANDI Archive</a>,
+  the BRAIN Initiative archive for publishing and sharing neurophysiology data. The figures are
+  regenerated every day from the archive's metadata and split by access status (open or embargoed).
+</p>
+<figure>
+  <div id="plot"></div>
+  <figcaption>
+    <ol>
+      <li><b>A</b> – Data sources: individual labs worldwide and large-scale consortia, including BICAN, BRAIN CONNECTS, the International Brain Laboratory (IBL) and Allen Institute OpenScope.</li>
+      <li><b>B</b> – Cumulative number of Dandisets over time.</li>
+      <li><b>C</b> – Cumulative size of the archive over time, in petabytes.</li>
+      <li><b>D</b> – Distribution of Dandiset sizes.</li>
+      <li><b>E</b> – Distribution of the number of subjects per Dandiset.</li>
+      <li><b>F</b> – Number of Dandisets by species.</li>
+      <li><b>G</b> – Number of Dandisets by data modality: extracellular and intracellular electrophysiology, optical physiology, behavior, eye tracking, optogenetics, fiber photometry and microscopy.</li>
+    </ol>
+  </figcaption>
+</figure>
 </main>
+<footer>
+  <p>
+    Download the underlying data as CSV:
+    <a href="timeseries.csv">monthly additions</a>,
+    <a href="sizes.csv">sizes</a>,
+    <a href="subjects.csv">subjects</a>,
+    <a href="species.csv">species</a>,
+    <a href="modalities.csv">modalities</a>.
+    Source code: <a href="https://github.com/dandi/dandi-stats">github.com/dandi/dandi-stats</a>.
+  </p>
+</footer>
 
 <script>
 const csvFiles = [
@@ -73,9 +200,9 @@ Promise.all(csvFiles.map(f => fetch(f)))
       if (!isNaN(d)) {
         const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         const label = `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
-        const title = `DANDI Archive Summary (${label})`;
-        document.getElementById('page-title').textContent = title;
-        document.title = title;
+        // Only the visible heading gets the date; the document title stays
+        // stable and descriptive for search results and bookmarks.
+        document.getElementById('page-title').textContent = `DANDI Archive Summary (${label})`;
       }
     }
     return Promise.all([...responses.map(r => r.text()), panelAReady]);

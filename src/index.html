@@ -438,12 +438,13 @@ const layout = {
 };
 
 // ---- mobile layout ----
-// Below this container width the panels are stacked in a single column by
-// overriding the positions and font sizes of the desktop layout above.
-const MOBILE_BREAKPOINT = 700;
+// On small screens the panels are stacked in a single column by overriding
+// the positions and font sizes of the desktop layout above. The query matches
+// the @media rule in the CSS so the page and the plot switch together.
+const mobileQuery = window.matchMedia('(max-width: 700px)');
+const isMobile = () => mobileQuery.matches;
 const PANEL_A_ASPECT = 988 / 236;  // width / height of img/panel-a.svg
 const plotDiv = document.getElementById('plot');
-const isMobile = () => plotDiv.clientWidth < MOBILE_BREAKPOINT;
 
 // Panels top to bottom: plot height (px) and the axes/legend each one uses.
 const mobilePanels = [
@@ -468,7 +469,12 @@ function mobileOverrides() {
   const toY = px => 1 - px / total;
   const leftEdge = -margin.l / plotW;  // paper x of the container's left edge
 
-  const o = { height: Math.round(total + margin.t + margin.b), margin, annotations: [] };
+  const o = {
+    height: Math.round(total + margin.t + margin.b), margin, annotations: [],
+    // Plotly cancels touch scrolling on charts while a drag mode is active,
+    // which makes the full-width stacked charts hard to scroll past.
+    dragmode: false,
+  };
   let px = 0;
   mobilePanels.forEach((p, i) => {
     o.annotations.push({ ...layout.annotations[i], x: leftEdge, y: toY(px), xanchor: 'left', yanchor: 'top', font: { size: 18 } });
@@ -553,16 +559,31 @@ Plotly.newPlot('plot', traces, layoutFor(mobileLayout), {
   // Switch between the stacked (mobile) and grid (desktop) layouts on resize.
   // The mobile layout depends on the width (panel A's height), so it is
   // rebuilt on every resize; the desktop layout only when crossing over.
+  // Height-only resizes (mobile browsers hiding the address bar while
+  // scrolling) are ignored.
   let resizeTimer;
+  let lastWidth = plotDiv.clientWidth;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      const width = plotDiv.clientWidth;
+      if (width === lastWidth) return;
+      lastWidth = width;
       const mobile = isMobile();
       if (mobile || mobile !== mobileLayout) {
         mobileLayout = mobile;
         Plotly.react(gd, gd.data, layoutFor(mobile));
       }
     }, 150);
+  });
+
+  // With dragmode off Plotly no longer shows values on tap, so do it here.
+  // Deferred so Plotly's own tap handling doesn't clear the label.
+  gd.addEventListener('click', e => {
+    const target = e.target.closest('.nsewdrag[data-subplot]');
+    if (!mobileLayout || !target) return;
+    const ev = { target, clientX: e.clientX, clientY: e.clientY };
+    setTimeout(() => Plotly.Fx.hover(gd, ev, target.dataset.subplot));
   });
 
   // The embargoed traces in B-E are drawn stacked on top of the open traces,
